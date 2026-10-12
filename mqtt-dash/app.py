@@ -83,7 +83,7 @@ start_mqtt_client("192.168.1.100", 1885, "mqttdata")
 app = dash.Dash(__name__)
 server = app.server
 
-app.layout = html.Div(style={"fontFamily": "Segoe UI, sans-serif", "padding": "24px", "backgroundColor": "#f4f6f9"}, children=[
+app.layout = html.Div(style={"fontFamily": "Segoe UI, sans-serif", "padding": "24px", "backgroundColor": "#f0f9ff"}, children=[
     html.H2("⚡ Live MQTT Telemetry Dashboard", style={"color": "#1e293b", "marginTop": "0"}),
     
     html.Div(style={
@@ -104,7 +104,7 @@ app.layout = html.Div(style={"fontFamily": "Segoe UI, sans-serif", "padding": "2
             dcc.Input(id="broker-topic", type="text", value="mqttdata", style={"width": "180px", "padding": "6px", "display": "block"})
         ]),
         html.Button("Apply & Connect", id="connect-btn", n_clicks=0, style={
-            "backgroundColor": "#2563eb", "color": "#fff", "border": "none", "padding": "8px 18px",
+            "backgroundColor": "#10b981", "color": "#fff", "border": "none", "padding": "8px 18px",
             "borderRadius": "4px", "cursor": "pointer", "fontWeight": "bold", "height": "34px"
         })
     ]),
@@ -141,8 +141,8 @@ def handle_connection(n_clicks, n_intervals, host, port, topic):
     err = connection_state["error"]
     
     is_connected = "Connected to" in stat
-    bg = "#dcfce7" if is_connected else "#fee2e2"
-    color = "#166534" if is_connected else "#991b1b"
+    bg = "#d1fae5" if is_connected else "#fee2e2"
+    color = "#065f46" if is_connected else "#991b1b"
     msg = f"Status: {stat} | Active Topic: '{topic}'" + (f" | Detail: {err}" if err else "")
     
     return msg, {"backgroundColor": bg, "color": color, "padding": "12px 16px", "borderRadius": "6px", "marginBottom": "20px"}
