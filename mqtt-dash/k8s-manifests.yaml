@@ -1,0 +1,107 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: iot-dashboard
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mqtt-dashboard-config
+  namespace: iot-dashboard
+data:
+  # Configure these values according to your environment
+  MQTT_BROKER_HOST: "192.168.1.100"
+  MQTT_BROKER_PORT: "1885"
+  MQTT_TOPIC: "mqttdata"
+  APP_PORT: "8050"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mqtt-dashboard-deployment
+  namespace: iot-dashboard
+  labels:
+    app: mqtt-dashboard
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: mqtt-dashboard
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: mqtt-dashboard
+    spec:
+      containers:
+      - name: mqtt-dashboard
+        # Replace 'your-docker-username' with your actual registry account
+        image: your-docker-username/mqtt-telemetry-dashboard:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8050
+          name: http
+        env:
+        - name: BROKER_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: mqtt-dashboard-config
+              key: MQTT_BROKER_HOST
+        - name: BROKER_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: mqtt-dashboard-config
+              key: MQTT_BROKER_PORT
+        - name: MQTT_TOPIC
+          valueFrom:
+            configMapKeyRef:
+              name: mqtt-dashboard-config
+              key: MQTT_TOPIC
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "300m"
+            memory: "256Mi"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8050
+          initialDelaySeconds: 15
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8050
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 2
+          failureThreshold: 2
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mqtt-dashboard-service
+  namespace: iot-dashboard
+  labels:
+    app: mqtt-dashboard
+spec:
+  # Use NodePort for local access (e.g. Minikube/K3s) or LoadBalancer for Cloud (AWS/GCP/Azure)
+  type: NodePort
+  selector:
+    app: mqtt-dashboard
+  ports:
+  - name: http
+    port: 8050
+    targetPort: 8050
+    nodePort: 30050
